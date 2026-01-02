@@ -918,6 +918,3 @@
 
   document.addEventListener("DOMContentLoaded", init);
 })();
-    // If the user picked specific sources, try to ensure we have enough variety per selected source.
-    // This is a soft validation to avoid repetitive output; it doesn't block generation if target is still achievable.
-    const variety = hasMinOptionsForSelectedSources(pool, preferredSources);
