@@ -660,6 +660,10 @@
     );
     const haveTypes = new Set(pool.map((m) => m.mealType));
 
+    // Soft variety check: if a selected source has too few options in the current pool,
+    // we can surface a helpful note after generation.
+    const variety = hasMinOptionsForSelectedSources(pool, preferredSources);
+
     // Must be able to fill each required slot type.
     const requiredTypes = uniq(MENU_SLOTS.map((s) => s.mealType));
     for (const t of requiredTypes) {
