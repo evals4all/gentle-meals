@@ -528,6 +528,10 @@
       }
     }
 
+    const requestedNonVeg = new Set(["eggs", "chicken", "fish"]);
+    const selectedNonVeg = new Set(Array.from(preferredSources).filter((s) => requestedNonVeg.has(s)));
+    const requireOneSelectedNonVeg = dietMode === "nonveg" && selectedNonVeg.size > 0;
+
     // Try multiple attempts to hit the target range.
     // Approach:
     // - pick 1 breakfast/lunch/dinner
@@ -548,6 +552,14 @@
         menu.push(pick);
       }
       if (menu.length !== MENU_SLOTS.length) continue;
+
+      // Hard requirement: if user explicitly selected eggs/chicken/fish in Non-veg mode,
+      // ensure at least one of those sources shows up somewhere in the day plan.
+      if (requireOneSelectedNonVeg) {
+        const used = new Set(sourcesUsed(menu));
+        const hasOne = Array.from(selectedNonVeg).some((s) => used.has(s));
+        if (!hasOne) continue;
+      }
 
       // Adjust by swapping snacks up/down.
       let current = totalProtein(menu);
@@ -639,7 +651,9 @@
       warnings.push("Added additional sources to meet protein goal.");
     }
 
-    return { ok: true, menu: best.menu, total: best.total, warnings };
+    const usedSources = sourcesUsed(best.menu);
+    const debug = `diet=${dietMode} selected=[${Array.from(preferredSources).sort().join(",")}] used=[${usedSources.sort().join(",")}]`;
+    return { ok: true, menu: best.menu, total: best.total, warnings, debug };
   }
 
   function suggestFixes({ dietMode, preferredSources, notes, pool, ulcerModeOn }) {
@@ -738,8 +752,13 @@
         const helper = $("helperText");
         const noteBit = notesText.trim() ? ` Notes: ${notesText.trim()}` : "";
         helper.textContent = `Daily Menu generated for ${dietMode === "veg" ? "Vegetarian" : "Non-vegetarian"} mode.${noteBit}`;
+
+        const dbg = $("debugText");
+        if (dbg) dbg.textContent = result.debug || "";
       } else {
         renderFailure(result, { target });
+        const dbg = $("debugText");
+        if (dbg) dbg.textContent = `diet=${dietMode} selected=[${Array.from(preferredSources).sort().join(",")}] used=[]`;
       }
 
       document.documentElement.classList.remove("pulse");
