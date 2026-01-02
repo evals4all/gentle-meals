@@ -485,10 +485,19 @@
     return hitCount * 100 + meal.protein;
   }
 
-  function chooseOne(mealType, pool, preferredSources, alreadyPickedIds) {
+  function chooseOne(mealType, pool, preferredSources, alreadyPickedIds, hardRequiredSources = null) {
     const candidates = pool.filter((m) => m.mealType === mealType && !alreadyPickedIds.has(m.id));
     if (!candidates.length) return null;
-    const sorted = candidates.slice().sort((a, b) => scoreMeal(b, preferredSources) - scoreMeal(a, preferredSources));
+
+    // If we're still missing a required source (e.g. eggs/chicken/fish), strongly bias toward meals that include it.
+    // This avoids relying on randomness + post-filtering retries.
+    let filtered = candidates;
+    if (hardRequiredSources && hardRequiredSources.size > 0) {
+      const want = filtered.filter((m) => (m.sources || []).some((s) => hardRequiredSources.has(s)));
+      if (want.length) filtered = want;
+    }
+
+    const sorted = filtered.slice().sort((a, b) => scoreMeal(b, preferredSources) - scoreMeal(a, preferredSources));
     const top = sorted.slice(0, Math.min(4, sorted.length));
     return top[Math.floor(Math.random() * top.length)];
   }
@@ -544,12 +553,23 @@
     for (let k = 0; k < attempts; k++) {
       const pickedIds = new Set();
       const menu = [];
+      const remainingRequired = new Set(selectedNonVeg);
 
       for (const slot of MENU_SLOTS) {
-        const pick = chooseOne(slot.mealType, pool, preferredSources, pickedIds);
+        const pick = chooseOne(
+          slot.mealType,
+          pool,
+          preferredSources,
+          pickedIds,
+          requireOneSelectedNonVeg ? remainingRequired : null,
+        );
         if (!pick) break;
         pickedIds.add(pick.id);
         menu.push(pick);
+
+        if (requireOneSelectedNonVeg) {
+          for (const s of pick.sources || []) remainingRequired.delete(s);
+        }
       }
       if (menu.length !== MENU_SLOTS.length) continue;
 
