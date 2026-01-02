@@ -39,38 +39,52 @@
         </div>
 
         <form id="generatorForm" class="generator" autocomplete="off">
-          <label class="field">
-            <span>Target protein (grams/day)</span>
-            <input id="proteinTarget" name="proteinTarget" type="number" min="0" step="5" value="70" />
-          </label>
+          <div class="generator-top">
+            <div class="gen-left">
+              <div class="eyebrow">Daily protein plan</div>
+              <div class="gen-title">Set your target, then generate a gentle Indian-style menu</div>
+              <p class="gen-help muted">
+                We aim for your target within a tolerance (65–75g by default for a 70g target) and show per-meal protein.
+              </p>
 
-          <fieldset class="fieldset" aria-label="Diet preference">
-            <legend>Diet</legend>
-            <div class="toggle-row">
-              <label class="radio">
-                <input type="radio" name="dietMode" value="veg" checked />
-                <span>Vegetarian</span>
-              </label>
-              <label class="radio">
-                <input type="radio" name="dietMode" value="nonveg" />
-                <span>Non-vegetarian</span>
+              <label class="field">
+                <span>Target protein (grams/day)</span>
+                <input id="proteinTarget" name="proteinTarget" type="number" min="0" step="5" value="70" />
               </label>
             </div>
-          </fieldset>
 
-          <label class="field field-span2">
-            <span>Dietary notes (optional)</span>
-            <input
-              id="dietaryNotes"
-              name="dietaryNotes"
-              type="text"
-              placeholder="e.g., lactose-free, low-acid, no spicy"
-            />
-          </label>
+            <div class="gen-right">
+              <div class="section-head">
+                <div class="section-title">Diet</div>
+                <div class="section-subtitle muted">Vegetarian or allow eggs/chicken/fish</div>
+              </div>
 
-          <fieldset class="fieldset field-span3" aria-label="Protein sources">
-            <legend>Include these protein sources</legend>
-            <div class="checks" id="proteinChecks">
+              <div class="segmented" role="radiogroup" aria-label="Diet preference">
+                <input id="diet-veg" type="radio" name="dietMode" value="veg" checked />
+                <label for="diet-veg">Vegetarian</label>
+                <input id="diet-nonveg" type="radio" name="dietMode" value="nonveg" />
+                <label for="diet-nonveg">Non-vegetarian</label>
+              </div>
+
+              <label class="field">
+                <span>Dietary notes (optional)</span>
+                <input
+                  id="dietaryNotes"
+                  name="dietaryNotes"
+                  type="text"
+                  placeholder="e.g., lactose-free, low-acid, no spicy"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div class="generator-bottom">
+            <div class="section-head">
+              <div class="section-title">Include these protein sources</div>
+              <div class="section-subtitle muted">We prioritize checked sources, but may add others to hit your goal</div>
+            </div>
+
+            <div class="checks checks-2col" id="proteinChecks">
               <label class="check"><input type="checkbox" name="src" value="paneer" checked /> <span>Paneer</span></label>
               <label class="check"><input type="checkbox" name="src" value="dahi" checked /> <span>Dahi/Greek yogurt</span></label>
               <label class="check"><input type="checkbox" name="src" value="milk" /> <span>Milk</span></label>
@@ -80,19 +94,15 @@
               <label class="check"><input type="checkbox" name="src" value="soy" /> <span>Soy (tofu/soy chunks)</span></label>
               <label class="check"><input type="checkbox" name="src" value="sprouts" checked /> <span>Sprouts</span></label>
               <label class="check"><input type="checkbox" name="src" value="peanuts" /> <span>Peanuts</span></label>
-              <label class="check" data-nonveg>
-                <input type="checkbox" name="src" value="eggs" /> <span>Eggs</span>
-              </label>
-              <label class="check" data-nonveg>
-                <input type="checkbox" name="src" value="chicken" /> <span>Chicken</span>
-              </label>
-              <label class="check" data-nonveg>
-                <input type="checkbox" name="src" value="fish" /> <span>Fish</span>
-              </label>
+              <label class="check" data-nonveg><input type="checkbox" name="src" value="eggs" /> <span>Eggs</span></label>
+              <label class="check" data-nonveg><input type="checkbox" name="src" value="chicken" /> <span>Chicken</span></label>
+              <label class="check" data-nonveg><input type="checkbox" name="src" value="fish" /> <span>Fish</span></label>
             </div>
-          </fieldset>
 
-          <button id="generateBtn" type="submit">Generate daily menu</button>
+            <div class="actions">
+              <button id="generateBtn" type="submit">Generate daily menu</button>
+            </div>
+          </div>
         </form>
 
         <div class="panel-foot" aria-live="polite">
