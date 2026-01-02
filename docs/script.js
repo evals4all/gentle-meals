@@ -1,6 +1,16 @@
 (() => {
   "use strict";
 
+  window.addEventListener("error", (e) => {
+    const dbg = document.getElementById("debugText");
+    if (dbg) dbg.textContent = `JS error: ${e.message || e.type}`;
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    const dbg = document.getElementById("debugText");
+    if (dbg) dbg.textContent = `Promise error: ${String(e.reason || "")}`;
+  });
+
   // Built-in food database (approx protein per serving).
   // Values are intentionally rough: vary by brand/recipe/portion.
   const FOOD_DB = [

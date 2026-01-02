@@ -320,6 +320,7 @@ button {
   font-size: 15px;
   border-color: rgba(106, 228, 255, 0.55);
   box-shadow: 0 14px 34px rgba(106, 228, 255, 0.14);
+  color: rgba(255, 255, 255, 0.98);
 }
 
 button:hover {
