@@ -78,16 +78,6 @@
       tags: ["indian", "gentle"],
     },
     {
-      id: "rajma_rice",
-      mealType: "lunch",
-      name: "Rajma + rice",
-      serving: "1 bowl rajma + 1 cup rice",
-      protein: 22,
-      sources: ["rajma"],
-      diet: "veg",
-      tags: ["indian", "gentle"],
-    },
-    {
       id: "chana_roti",
       mealType: "lunch",
       name: "Chana masala (mild) + roti",
@@ -138,16 +128,6 @@
       sources: ["dal"],
       diet: "veg",
       tags: ["indian", "gentle"],
-    },
-    {
-      id: "tofu_rice_bowl",
-      mealType: "dinner",
-      name: "Tofu rice bowl (mild)",
-      serving: "200g tofu + 1 cup rice",
-      protein: 26,
-      sources: ["soy"],
-      diet: "veg",
-      tags: ["indian-ish", "gentle"],
     },
     {
       id: "fish_curry_rice",
@@ -202,6 +182,26 @@
       tags: ["gentle"],
     },
     {
+      id: "milk_warm",
+      mealType: "snack",
+      name: "Warm milk",
+      serving: "1 cup",
+      protein: 8,
+      sources: ["milk"],
+      diet: "veg",
+      tags: ["gentle"],
+    },
+    {
+      id: "milk_oats",
+      mealType: "breakfast",
+      name: "Oats porridge with milk",
+      serving: "1 bowl",
+      protein: 12,
+      sources: ["milk"],
+      diet: "veg",
+      tags: ["gentle"],
+    },
+    {
       id: "roasted_chana_halfcup",
       mealType: "snack",
       name: "Roasted chana",
@@ -212,21 +212,31 @@
       tags: ["indian"],
     },
     {
-      id: "sprouts_1cup",
-      mealType: "snack",
-      name: "Moong sprouts (no spice)",
-      serving: "1 cup",
-      protein: 8,
-      sources: ["sprouts"],
-      diet: "veg",
-      tags: ["indian", "gentle"],
-    },
-    {
       id: "paneer_100g",
       mealType: "snack",
       name: "Paneer cubes (soft)",
       serving: "100g",
       protein: 18,
+      sources: ["paneer"],
+      diet: "veg",
+      tags: ["indian", "gentle"],
+    },
+    {
+      id: "paneer_bhurji_small",
+      mealType: "snack",
+      name: "Paneer bhurji (mild)",
+      serving: "100g paneer",
+      protein: 20,
+      sources: ["paneer"],
+      diet: "veg",
+      tags: ["indian", "gentle"],
+    },
+    {
+      id: "paneer_curry_mild",
+      mealType: "dinner",
+      name: "Paneer curry (mild) + rice",
+      serving: "150g paneer + 1 cup rice",
+      protein: 32,
       sources: ["paneer"],
       diet: "veg",
       tags: ["indian", "gentle"],
@@ -260,6 +270,88 @@
       sources: ["soy"],
       diet: "veg",
       tags: ["gentle"],
+    },
+
+    // Light western-ish options (still gentle)
+    {
+      id: "scrambled_eggs_toast",
+      mealType: "breakfast",
+      name: "Scrambled eggs (soft) + toast",
+      serving: "2 eggs + 1 slice toast",
+      protein: 14,
+      sources: ["eggs"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
+    },
+    {
+      id: "egg_drop_soup",
+      mealType: "snack",
+      name: "Egg drop soup (mild)",
+      serving: "1 bowl",
+      protein: 10,
+      sources: ["eggs"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
+    },
+    {
+      id: "chicken_stew",
+      mealType: "dinner",
+      name: "Light chicken stew",
+      serving: "1 bowl (small)",
+      protein: 20,
+      sources: ["chicken"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
+    },
+    {
+      id: "chicken_soup",
+      mealType: "snack",
+      name: "Light chicken soup",
+      serving: "1 bowl (small)",
+      protein: 14,
+      sources: ["chicken"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
+    },
+    {
+      id: "chicken_rice_soup",
+      mealType: "dinner",
+      name: "Chicken rice soup (mild)",
+      serving: "1 bowl",
+      protein: 18,
+      sources: ["chicken"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
+    },
+    {
+      id: "fish_soup",
+      mealType: "snack",
+      name: "Mild fish soup",
+      serving: "1 bowl (small)",
+      protein: 14,
+      sources: ["fish"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
+    },
+    {
+      id: "fish_steamed_rice",
+      mealType: "lunch",
+      name: "Steamed fish + rice",
+      serving: "120g fish + 1 cup rice",
+      protein: 28,
+      sources: ["fish"],
+      diet: "nonveg",
+      tags: ["gentle"],
+    },
+    {
+      id: "baked_fish_potato",
+      mealType: "dinner",
+      name: "Baked fish + mashed potato",
+      serving: "120g fish + 1 cup potato",
+      protein: 26,
+      sources: ["fish"],
+      diet: "nonveg",
+      tags: ["western", "gentle"],
     },
   ];
 
@@ -296,6 +388,19 @@
     "citrus",
     "vinegar",
   ];
+
+  const SOURCE_MIN_OPTIONS = 4;
+  const SOURCE_LABELS = {
+    paneer: "paneer",
+    dahi: "dahi/Greek yogurt",
+    milk: "milk",
+    dal: "dal",
+    chana: "chana",
+    eggs: "eggs",
+    chicken: "chicken",
+    fish: "fish",
+    soy: "soy",
+  };
 
   function $(id) {
     return document.getElementById(id);
@@ -516,6 +621,26 @@
       .map((m) => applyAgeScaling(m, ageScale));
   }
 
+  function countOptionsBySource(pool) {
+    const counts = {};
+    for (const m of pool) {
+      for (const s of m.sources || []) {
+        counts[s] = (counts[s] || 0) + 1;
+      }
+    }
+    return counts;
+  }
+
+  function hasMinOptionsForSelectedSources(pool, preferredSources) {
+    const counts = countOptionsBySource(pool);
+    const missing = [];
+    for (const s of preferredSources) {
+      if (!SOURCE_LABELS[s]) continue;
+      if ((counts[s] || 0) < SOURCE_MIN_OPTIONS) missing.push(`${SOURCE_LABELS[s]} (${counts[s] || 0}/${SOURCE_MIN_OPTIONS})`);
+    }
+    return { ok: missing.length === 0, missing };
+  }
+
   function generateDailyMenu({ target, dietMode, preferredSources, notes, ulcerModeOn, ageScale }) {
     const toleranceMin = target + DEFAULT_TOLERANCE.min;
     const toleranceMax = target + DEFAULT_TOLERANCE.max;
@@ -546,7 +671,7 @@
     // - pick 1 breakfast/lunch/dinner
     // - pick 3 snacks
     // - if low, swap in higher-protein snacks (Greek yogurt/soy chunks/paneer) if allowed
-    // - if high, swap in lower-protein snacks (milk/peanuts/sprouts) if allowed
+    // - if high, swap in lower-protein snacks (milk/curd) if allowed
     let best = null;
     const attempts = 250;
 
@@ -654,7 +779,7 @@
       if (best.total > toleranceMax) {
         warnings.push(
           `Above target: aiming for ${target}g (tolerance ${toleranceMin}–${toleranceMax}g), but got ~${best.total}g. ` +
-            `Consider smaller portions or swapping a snack to a lighter option (milk, curd, or sprouts).`,
+            `Consider smaller portions or swapping a snack to a lighter option (milk or curd).`,
         );
       } else if (best.total < toleranceMin) {
         warnings.push(
@@ -673,6 +798,10 @@
 
     const usedSources = sourcesUsed(best.menu);
     const debug = `diet=${dietMode} selected=[${Array.from(preferredSources).sort().join(",")}] used=[${usedSources.sort().join(",")}]`;
+    if (!variety.ok && variety.missing.length) {
+      warnings.push(`Limited variety for: ${variety.missing.join(", ")}.`);
+    }
+
     return { ok: true, menu: best.menu, total: best.total, warnings, debug };
   }
 
@@ -688,7 +817,7 @@
 
     if (dietMode === "veg") {
       suggestions.push("If you eat eggs, switch to Non-vegetarian and enable Eggs.");
-      suggestions.push("Or enable Soy (tofu/soy chunks) for higher-protein vegetarian options.");
+      suggestions.push("Or enable Soy (soy chunks) for higher-protein vegetarian options.");
     } else {
       if (!preferredSources.has("eggs")) suggestions.push("Enable Eggs for a gentle high-protein option.");
       if (!preferredSources.has("chicken")) suggestions.push("Enable Chicken for easier protein targets.");
@@ -789,3 +918,6 @@
 
   document.addEventListener("DOMContentLoaded", init);
 })();
+    // If the user picked specific sources, try to ensure we have enough variety per selected source.
+    // This is a soft validation to avoid repetitive output; it doesn't block generation if target is still achievable.
+    const variety = hasMinOptionsForSelectedSources(pool, preferredSources);
