@@ -30,10 +30,11 @@
     <main class="wrap">
       <section class="panel" aria-labelledby="generator-title">
         <div class="panel-head">
-          <h2 id="generator-title">Meal Idea Generator</h2>
+          <h2 id="generator-title">Daily Menu Generator</h2>
           <p class="muted">
-            Pick a protein target and add any dietary notes (optional). We'll generate six gentle meal ideas from a
-            built-in list.
+            Build an India-oriented daily menu (breakfast, lunch, dinner, and 3 snacks) with protein in mind.
+            Examples include dal/khichdi, roti/rice, dahi/curd, paneer, chana/rajma, sprouts, idli/poha/upma, and
+            gentle non-veg options like eggs, chicken, and fish.
           </p>
         </div>
 
@@ -43,43 +44,71 @@
             <input id="proteinTarget" name="proteinTarget" type="number" min="0" step="5" value="70" />
           </label>
 
-          <label class="field">
-            <span>Dietary notes</span>
+          <fieldset class="fieldset" aria-label="Diet preference">
+            <legend>Diet</legend>
+            <div class="toggle-row">
+              <label class="radio">
+                <input type="radio" name="dietMode" value="veg" checked />
+                <span>Vegetarian</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="dietMode" value="nonveg" />
+                <span>Non-vegetarian</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="field field-span2">
+            <span>Dietary notes (optional)</span>
             <input
               id="dietaryNotes"
               name="dietaryNotes"
               type="text"
-              placeholder="e.g., lactose-free, low-acid, no spicy, vegetarian"
+              placeholder="e.g., lactose-free, low-acid, no spicy"
             />
           </label>
 
-          <button id="generateBtn" type="submit">Generate gentle meal ideas</button>
+          <fieldset class="fieldset field-span3" aria-label="Protein sources">
+            <legend>Include these protein sources</legend>
+            <div class="checks" id="proteinChecks">
+              <label class="check"><input type="checkbox" name="src" value="paneer" checked /> <span>Paneer</span></label>
+              <label class="check"><input type="checkbox" name="src" value="dahi" checked /> <span>Dahi/Greek yogurt</span></label>
+              <label class="check"><input type="checkbox" name="src" value="milk" /> <span>Milk</span></label>
+              <label class="check"><input type="checkbox" name="src" value="dal" checked /> <span>Dal (moong/masoor/toor)</span></label>
+              <label class="check"><input type="checkbox" name="src" value="chana" checked /> <span>Chana/Chole</span></label>
+              <label class="check"><input type="checkbox" name="src" value="rajma" /> <span>Rajma</span></label>
+              <label class="check"><input type="checkbox" name="src" value="soy" /> <span>Soy (tofu/soy chunks)</span></label>
+              <label class="check"><input type="checkbox" name="src" value="sprouts" checked /> <span>Sprouts</span></label>
+              <label class="check"><input type="checkbox" name="src" value="peanuts" /> <span>Peanuts</span></label>
+              <label class="check" data-nonveg>
+                <input type="checkbox" name="src" value="eggs" /> <span>Eggs</span>
+              </label>
+              <label class="check" data-nonveg>
+                <input type="checkbox" name="src" value="chicken" /> <span>Chicken</span>
+              </label>
+              <label class="check" data-nonveg>
+                <input type="checkbox" name="src" value="fish" /> <span>Fish</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <button id="generateBtn" type="submit">Generate daily menu</button>
         </form>
 
         <div class="panel-foot" aria-live="polite">
-          <p class="muted" id="helperText">
-            Tip: start bland and gentle, then add flavor with herbs (not heat) if you tolerate them.
-          </p>
+          <p class="muted" id="helperText">Tip: keep it gentle (no spicy/acidic), then adjust seasoning as tolerated.</p>
+          <p class="muted" id="warningText" role="status"></p>
         </div>
       </section>
 
-      <section class="grid" aria-label="Six meal cards">
+      <section class="grid" aria-label="Daily Menu">
         <article class="card" data-slot="breakfast">
           <div class="card-top">
             <h3>Breakfast</h3>
             <span class="pill">gentle</span>
           </div>
-          <p class="idea" id="idea-breakfast">Warm oatmeal with banana + stirred-in Greek yogurt</p>
-          <p class="meta" id="meta-breakfast">~20g protein (depends on portions)</p>
-        </article>
-
-        <article class="card" data-slot="breakfast2">
-          <div class="card-top">
-            <h3>Breakfast</h3>
-            <span class="pill">quick</span>
-          </div>
-          <p class="idea" id="idea-breakfast2">Scrambled eggs with spinach + soft toast</p>
-          <p class="meta" id="meta-breakfast2">~18g protein</p>
+          <p class="idea" id="idea-breakfast">Moong dal cheela</p>
+          <p class="meta" id="meta-breakfast">2 cheela (medium) • ~18g protein</p>
         </article>
 
         <article class="card" data-slot="lunch">
@@ -87,8 +116,8 @@
             <h3>Lunch</h3>
             <span class="pill">balanced</span>
           </div>
-          <p class="idea" id="idea-lunch">Chicken & rice bowl with steamed zucchini</p>
-          <p class="meta" id="meta-lunch">~30g protein</p>
+          <p class="idea" id="idea-lunch">Dal + rice + dahi</p>
+          <p class="meta" id="meta-lunch">1 bowl dal + 1 cup rice + 1/2 cup dahi • ~24g protein</p>
         </article>
 
         <article class="card" data-slot="dinner">
@@ -96,27 +125,46 @@
             <h3>Dinner</h3>
             <span class="pill">simple</span>
           </div>
-          <p class="idea" id="idea-dinner">Baked salmon with mashed potatoes + carrots</p>
-          <p class="meta" id="meta-dinner">~32g protein</p>
+          <p class="idea" id="idea-dinner">Khichdi + curd</p>
+          <p class="meta" id="meta-dinner">1.5 cups khichdi + 1/2 cup curd • ~22g protein</p>
         </article>
 
-        <article class="card" data-slot="snack">
+        <article class="card" data-slot="snack1">
           <div class="card-top">
-            <h3>Snack</h3>
+            <h3>Snack 1</h3>
             <span class="pill">soft</span>
           </div>
-          <p class="idea" id="idea-snack">Cottage cheese with sliced peaches (or lactose-free option)</p>
-          <p class="meta" id="meta-snack">~14g protein</p>
+          <p class="idea" id="idea-snack1">Dahi (plain)</p>
+          <p class="meta" id="meta-snack1">1 cup • ~10g protein</p>
         </article>
 
         <article class="card" data-slot="snack2">
           <div class="card-top">
-            <h3>Snack</h3>
+            <h3>Snack 2</h3>
             <span class="pill">portable</span>
           </div>
-          <p class="idea" id="idea-snack2">Turkey slices + plain crackers + cucumber</p>
-          <p class="meta" id="meta-snack2">~15g protein</p>
+          <p class="idea" id="idea-snack2">Roasted chana</p>
+          <p class="meta" id="meta-snack2">1/2 cup • ~10g protein</p>
         </article>
+
+        <article class="card" data-slot="snack3">
+          <div class="card-top">
+            <h3>Snack 3</h3>
+            <span class="pill">light</span>
+          </div>
+          <p class="idea" id="idea-snack3">Sprouts chaat (no spice)</p>
+          <p class="meta" id="meta-snack3">1 cup • ~9g protein</p>
+        </article>
+      </section>
+
+      <section class="totalbar" aria-label="Daily protein total">
+        <div class="totalbar-inner">
+          <div>
+            <div class="total-label">Daily total</div>
+            <div class="total-value" id="totalProtein">~73g protein</div>
+          </div>
+          <div class="total-meta muted" id="totalMeta">Target 70g • tolerance 65–75g</div>
+        </div>
       </section>
 
       <footer class="footer">

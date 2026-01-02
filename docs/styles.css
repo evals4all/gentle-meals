@@ -126,6 +126,82 @@ h1 {
   font-size: 13px;
 }
 
+.field-span2 {
+  grid-column: span 2;
+}
+
+.field-span3 {
+  grid-column: 1 / -1;
+}
+
+.fieldset {
+  margin: 0;
+  padding: 10px 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(234, 240, 255, 0.18);
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.fieldset legend {
+  padding: 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 240, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  user-select: none;
+}
+
+.radio input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.checks {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(234, 240, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.check[data-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .field span {
   color: var(--muted);
 }
@@ -171,6 +247,11 @@ button:active {
   margin-top: 10px;
   border-top: 1px solid var(--line);
   padding-top: 10px;
+}
+
+.panel-foot #warningText {
+  margin: 8px 0 0;
+  color: rgba(255, 223, 138, 0.92);
 }
 
 .grid {
@@ -245,10 +326,47 @@ h3 {
   padding: 26px 0 40px;
 }
 
+ .totalbar {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(154, 245, 215, 0.07), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+
+.totalbar-inner {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.total-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.total-value {
+  font-family: var(--mono);
+  font-size: 18px;
+  letter-spacing: 0.01em;
+}
+
 @media (max-width: 860px) {
   .generator {
     grid-template-columns: 1fr;
     align-items: stretch;
+  }
+
+  .field-span2,
+  .field-span3 {
+    grid-column: auto;
+  }
+
+  .checks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   button {
