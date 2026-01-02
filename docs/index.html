@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gentle Meals</title>
+    <meta
+      name="description"
+      content="Ulcer-friendly meal ideas with protein in mind. Not medical advice."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">GM</div>
+          <div>
+            <h1>Gentle Meals</h1>
+            <p class="subtitle">Ulcer-friendly meal ideas with protein in mind</p>
+          </div>
+        </div>
+
+        <div class="disclaimer" role="note" aria-label="Disclaimer">
+          <strong>Not medical advice.</strong> Consult a clinician for personalized guidance.
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="panel" aria-labelledby="generator-title">
+        <div class="panel-head">
+          <h2 id="generator-title">Meal Idea Generator</h2>
+          <p class="muted">
+            Pick a protein target and add any dietary notes (optional). We'll generate six gentle meal ideas from a
+            built-in list.
+          </p>
+        </div>
+
+        <form id="generatorForm" class="generator" autocomplete="off">
+          <label class="field">
+            <span>Target protein (grams/day)</span>
+            <input id="proteinTarget" name="proteinTarget" type="number" min="0" step="5" value="70" />
+          </label>
+
+          <label class="field">
+            <span>Dietary notes</span>
+            <input
+              id="dietaryNotes"
+              name="dietaryNotes"
+              type="text"
+              placeholder="e.g., lactose-free, low-acid, no spicy, vegetarian"
+            />
+          </label>
+
+          <button id="generateBtn" type="submit">Generate gentle meal ideas</button>
+        </form>
+
+        <div class="panel-foot" aria-live="polite">
+          <p class="muted" id="helperText">
+            Tip: start bland and gentle, then add flavor with herbs (not heat) if you tolerate them.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid" aria-label="Six meal cards">
+        <article class="card" data-slot="breakfast">
+          <div class="card-top">
+            <h3>Breakfast</h3>
+            <span class="pill">gentle</span>
+          </div>
+          <p class="idea" id="idea-breakfast">Warm oatmeal with banana + stirred-in Greek yogurt</p>
+          <p class="meta" id="meta-breakfast">~20g protein (depends on portions)</p>
+        </article>
+
+        <article class="card" data-slot="breakfast2">
+          <div class="card-top">
+            <h3>Breakfast</h3>
+            <span class="pill">quick</span>
+          </div>
+          <p class="idea" id="idea-breakfast2">Scrambled eggs with spinach + soft toast</p>
+          <p class="meta" id="meta-breakfast2">~18g protein</p>
+        </article>
+
+        <article class="card" data-slot="lunch">
+          <div class="card-top">
+            <h3>Lunch</h3>
+            <span class="pill">balanced</span>
+          </div>
+          <p class="idea" id="idea-lunch">Chicken & rice bowl with steamed zucchini</p>
+          <p class="meta" id="meta-lunch">~30g protein</p>
+        </article>
+
+        <article class="card" data-slot="dinner">
+          <div class="card-top">
+            <h3>Dinner</h3>
+            <span class="pill">simple</span>
+          </div>
+          <p class="idea" id="idea-dinner">Baked salmon with mashed potatoes + carrots</p>
+          <p class="meta" id="meta-dinner">~32g protein</p>
+        </article>
+
+        <article class="card" data-slot="snack">
+          <div class="card-top">
+            <h3>Snack</h3>
+            <span class="pill">soft</span>
+          </div>
+          <p class="idea" id="idea-snack">Cottage cheese with sliced peaches (or lactose-free option)</p>
+          <p class="meta" id="meta-snack">~14g protein</p>
+        </article>
+
+        <article class="card" data-slot="snack2">
+          <div class="card-top">
+            <h3>Snack</h3>
+            <span class="pill">portable</span>
+          </div>
+          <p class="idea" id="idea-snack2">Turkey slices + plain crackers + cucumber</p>
+          <p class="meta" id="meta-snack2">~15g protein</p>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <p class="muted">
+          Built with plain HTML/CSS/JS. If symptoms persist or worsen, seek medical care.
+        </p>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
