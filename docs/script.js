@@ -274,6 +274,29 @@
 
   const DEFAULT_TOLERANCE = { min: -5, max: 5 }; // +/- 5g around target
 
+  const AGE_SCALE = {
+    under60: 1.0,
+    "60to75": 0.9,
+    "76to85": 0.75,
+    "85plus": 0.65,
+  };
+
+  const ULCER_AVOID_SOURCES = new Set(["peanuts"]);
+  const ULCER_AVOID_WORDS = [
+    "spicy",
+    "fried",
+    "pickle",
+    "achaar",
+    "chilli",
+    "chili",
+    "masala",
+    "tandoori",
+    "tomato",
+    "lemon",
+    "citrus",
+    "vinegar",
+  ];
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -303,6 +326,96 @@
       .filter(Boolean);
   }
 
+  function formatFraction(x) {
+    // Friendly fractions for common scales.
+    if (x >= 0.99) return "1";
+    if (x >= 0.84) return "3/4";
+    if (x >= 0.69) return "2/3";
+    if (x >= 0.58) return "1/2";
+    if (x >= 0.42) return "1/3";
+    if (x >= 0.30) return "1/4";
+    return "small";
+  }
+
+  function scaleNumber(n, scale) {
+    // Round to a caregiver-friendly number (e.g., 0.75 cups, 1.5 cups).
+    const v = n * scale;
+    const rounded = Math.round(v * 4) / 4; // nearest 1/4
+    // Trim trailing .0
+    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  }
+
+  function scaleUnitText(numStr, unit, scale) {
+    const n = Number(numStr);
+    if (!Number.isFinite(n)) return null;
+    const scaled = scaleNumber(n, scale);
+    return `${scaled} ${unit}`;
+  }
+
+  function scaleServingText(serving, scale) {
+    if (scale >= 0.99) return serving;
+
+    // Try to scale common caregiver-readable patterns.
+    // Examples:
+    // - "1 cup" -> "0.75 cup"
+    // - "1/2 cup" -> "0.5 cup" (kept as 0.5 after parsing)
+    // - "2 eggs" -> "1.5 eggs" (we'll keep decimals; users can round if needed)
+    // - "150g paneer" -> "112.5g paneer"
+    // - "3 idlis + 3/4 cup sambar" -> scale each segment
+    const parts = serving.split(/\s*\+\s*/);
+    const scaledParts = parts.map((p) => {
+      const s = p.trim();
+
+      // Mixed fraction like "3/4 cup"
+      let m = s.match(/^(\d+)\s*\/\s*(\d+)\s+(cup|cups)\b/i);
+      if (m) {
+        const frac = Number(m[1]) / Number(m[2]);
+        return scaleUnitText(String(frac), m[3], scale) || s;
+      }
+
+      // Mixed fraction like "1/2 cup dahi"
+      m = s.match(/^(\d+)\s*\/\s*(\d+)\s+(cup|cups|tbsp|tablespoon|tablespoons)\b(.*)$/i);
+      if (m) {
+        const frac = Number(m[1]) / Number(m[2]);
+        const rest = (m[4] || "").trim();
+        const scaled = scaleUnitText(String(frac), m[3], scale);
+        return scaled ? `${scaled}${rest ? " " + rest : ""}` : s;
+      }
+
+      // Plain number + unit (cup/tbsp/g) with optional trailing description.
+      m = s.match(/^(\d+(?:\.\d+)?)\s*(cup|cups|tbsp|g)\b(.*)$/i);
+      if (m) {
+        const rest = (m[3] || "").trim();
+        const scaled = scaleUnitText(m[1], m[2], scale);
+        return scaled ? `${scaled}${rest ? " " + rest : ""}` : s;
+      }
+
+      // Eggs / rotis / idlis / chillas / bowls
+      m = s.match(/^(\d+(?:\.\d+)?)\s+(eggs?|rotis?|idlis?|chillas?|cheelas?|bowls?|bowl)\b(.*)$/i);
+      if (m) {
+        const rest = (m[3] || "").trim();
+        const n = Number(m[1]);
+        if (!Number.isFinite(n)) return s;
+        const scaledN = scaleNumber(n, scale);
+        return `${scaledN} ${m[2]}${rest ? " " + rest : ""}`;
+      }
+
+      // If we can't parse it, fall back to a clear but still caregiver-friendly prefix.
+      if (scale <= 0.30) return `small portion: ${s}`;
+      return `${formatFraction(scale)} portion: ${s}`;
+    });
+
+    return scaledParts.join(" + ");
+  }
+
+  function applyAgeScaling(meal, scale) {
+    return {
+      ...meal,
+      protein: Math.round(meal.protein * scale),
+      serving: scaleServingText(meal.serving, scale),
+    };
+  }
+
   function mealAllowedByDiet(meal, dietMode) {
     if (dietMode === "veg") return meal.diet === "veg";
     // nonveg mode allows both veg and nonveg entries (we only include eggs/chicken/fish as nonveg).
@@ -327,6 +440,14 @@
     return true;
   }
 
+  function mealAllowedByUlcerMode(meal, ulcerModeOn) {
+    if (!ulcerModeOn) return true;
+    if ((meal.sources || []).some((s) => ULCER_AVOID_SOURCES.has(s))) return false;
+    const text = (meal.name + " " + meal.serving).toLowerCase();
+    if (ULCER_AVOID_WORDS.some((w) => text.includes(w))) return false;
+    return true;
+  }
+
   function getSelectedDietMode(form) {
     const el = form.querySelector('input[name=\"dietMode\"]:checked');
     return el ? el.value : "veg";
@@ -335,6 +456,17 @@
   function getSelectedProteinSources(form) {
     const checked = Array.from(form.querySelectorAll('input[type=\"checkbox\"][name=\"src\"]:checked')).map((i) => i.value);
     return new Set(checked);
+  }
+
+  function getUlcerMode(form) {
+    const el = $("ulcerMode");
+    return el ? Boolean(el.checked) : true;
+  }
+
+  function getAgeScale(form) {
+    const sel = $("ageRange");
+    const key = sel && sel.value ? sel.value : "under60";
+    return AGE_SCALE[key] ?? 1.0;
   }
 
   function setNonVegControlsEnabled(form, enabled) {
@@ -369,15 +501,19 @@
     return uniq(menu.flatMap((m) => (m ? m.sources : [])));
   }
 
-  function buildPool({ dietMode, notes }) {
-    return FOOD_DB.filter((m) => mealAllowedByDiet(m, dietMode) && mealAllowedByNotes(m, notes));
+  function buildPool({ dietMode, notes, ulcerModeOn, ageScale }) {
+    return FOOD_DB
+      .filter((m) => mealAllowedByDiet(m, dietMode) && mealAllowedByNotes(m, notes) && mealAllowedByUlcerMode(m, ulcerModeOn))
+      .map((m) => applyAgeScaling(m, ageScale));
   }
 
-  function generateDailyMenu({ target, dietMode, preferredSources, notes }) {
+  function generateDailyMenu({ target, dietMode, preferredSources, notes, ulcerModeOn, ageScale }) {
     const toleranceMin = target + DEFAULT_TOLERANCE.min;
     const toleranceMax = target + DEFAULT_TOLERANCE.max;
 
-    const pool = buildPool({ dietMode, notes });
+    const pool = buildPool({ dietMode, notes, ulcerModeOn, ageScale }).filter(
+      (m) => !(ulcerModeOn && (m.sources || []).some((s) => s === "peanuts")),
+    );
     const haveTypes = new Set(pool.map((m) => m.mealType));
 
     // Must be able to fill each required slot type.
@@ -477,13 +613,25 @@
       return {
         ok: false,
         message: `Couldn't generate a menu with the current constraints.`,
-        suggestions: suggestFixes({ dietMode, preferredSources, notes, pool }),
+        suggestions: suggestFixes({ dietMode, preferredSources, notes, pool, ulcerModeOn }),
       };
     }
 
     const warnings = [];
     if (!best.within) {
-      warnings.push(`Couldn't hit ${target}g within 65–75g; got ~${best.total}g. Try adding a higher-protein source.`);
+      if (best.total > toleranceMax) {
+        warnings.push(
+          `Above target: aiming for ${target}g (tolerance ${toleranceMin}–${toleranceMax}g), but got ~${best.total}g. ` +
+            `Consider smaller portions or swapping a snack to a lighter option (milk, curd, or sprouts).`,
+        );
+      } else if (best.total < toleranceMin) {
+        warnings.push(
+          `Below target: aiming for ${target}g (tolerance ${toleranceMin}–${toleranceMax}g), but got ~${best.total}g. ` +
+            `Consider adding Greek yogurt/paneer/soy chunks, or an extra gentle snack.`,
+        );
+      }
+    } else {
+      warnings.push(`On target: ~${best.total}g (goal ${target}g, tolerance ${toleranceMin}–${toleranceMax}g).`);
     }
 
     // If user selected too few sources, we likely had to pull in other allowed items.
@@ -494,7 +642,7 @@
     return { ok: true, menu: best.menu, total: best.total, warnings };
   }
 
-  function suggestFixes({ dietMode, preferredSources, notes, pool }) {
+  function suggestFixes({ dietMode, preferredSources, notes, pool, ulcerModeOn }) {
     const suggestions = [];
     const notesSet = new Set(notes);
     const wantsLactoseFree = notesSet.has("lactose-free") || notesSet.has("dairy-free") || notesSet.has("no dairy");
@@ -512,6 +660,8 @@
       if (!preferredSources.has("chicken")) suggestions.push("Enable Chicken for easier protein targets.");
       if (!preferredSources.has("fish")) suggestions.push("Enable Fish if tolerated.");
     }
+
+    if (ulcerModeOn) suggestions.push("If you're not in a flare, you can try turning off Ulcer-friendly mode to widen options.");
 
     // If pool is tiny, suggest loosening notes.
     if (pool && pool.length < 8) suggestions.push("Try removing some dietary notes to widen the options.");
@@ -533,7 +683,7 @@
     });
 
     $("totalProtein").textContent = `~${totalProtein(menu)}g protein`;
-    $("totalMeta").textContent = `Target ${target}g • tolerance 65–75g`;
+    $("totalMeta").textContent = `Target ${target}g • tolerance ${target + DEFAULT_TOLERANCE.min}–${target + DEFAULT_TOLERANCE.max}g`;
 
     const warningEl = $("warningText");
     warningEl.textContent = warnings && warnings.length ? warnings.join(" ") : "";
@@ -578,8 +728,10 @@
       const notes = normalizeNotes(notesText);
       const dietMode = getSelectedDietMode(form);
       const preferredSources = getSelectedProteinSources(form);
+      const ulcerModeOn = getUlcerMode(form);
+      const ageScale = getAgeScale(form);
 
-      const result = generateDailyMenu({ target, dietMode, preferredSources, notes });
+      const result = generateDailyMenu({ target, dietMode, preferredSources, notes, ulcerModeOn, ageScale });
 
       if (result.ok) {
         renderMenu(result.menu, { target, warnings: result.warnings });
@@ -598,4 +750,3 @@
 
   document.addEventListener("DOMContentLoaded", init);
 })();
-
