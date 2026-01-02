@@ -282,16 +282,27 @@
       tags: ["gentle"],
     },
 
-    // Light western-ish options (still gentle)
+    // Ulcer-friendly non-veg templates (Indian-style, no chili/tomato/garam masala language)
+    // Eggs (>=4)
     {
-      id: "scrambled_eggs_toast",
-      mealType: "breakfast",
-      name: "Scrambled eggs (soft) + toast",
-      serving: "2 eggs + 1 slice toast",
-      protein: 14,
+      id: "egg_soft_boiled",
+      mealType: "snack",
+      name: "Soft-boiled eggs",
+      serving: "2 eggs",
+      protein: 12,
       sources: ["eggs"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["gentle"],
+    },
+    {
+      id: "egg_bhurji_mild",
+      mealType: "breakfast",
+      name: "Egg bhurji (mild)",
+      serving: "2 eggs",
+      protein: 12,
+      sources: ["eggs"],
+      diet: "nonveg",
+      tags: ["indian", "gentle"],
     },
     {
       id: "egg_drop_soup",
@@ -301,48 +312,62 @@
       protein: 10,
       sources: ["eggs"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["gentle"],
     },
     {
-      id: "chicken_stew",
+      id: "steamed_egg_custard",
+      mealType: "snack",
+      name: "Steamed egg custard (savory, mild)",
+      serving: "1 bowl",
+      protein: 12,
+      sources: ["eggs"],
+      diet: "nonveg",
+      tags: ["gentle"],
+    },
+
+    // Chicken (>=4)
+    {
+      id: "chicken_stew_mild",
       mealType: "dinner",
-      name: "Light chicken stew",
-      serving: "1 bowl (small)",
+      name: "Mild chicken stew",
+      serving: "1 bowl",
       protein: 20,
       sources: ["chicken"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["gentle"],
     },
     {
-      id: "chicken_soup",
+      id: "chicken_soup_mild",
       mealType: "snack",
-      name: "Light chicken soup",
+      name: "Chicken soup (mild)",
       serving: "1 bowl (small)",
       protein: 14,
       sources: ["chicken"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["gentle"],
     },
     {
-      id: "chicken_rice_soup",
-      mealType: "dinner",
-      name: "Chicken rice soup (mild)",
+      id: "chicken_rice_porridge",
+      mealType: "lunch",
+      name: "Shredded chicken + rice porridge",
       serving: "1 bowl",
-      protein: 18,
+      protein: 22,
       sources: ["chicken"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["gentle"],
     },
     {
-      id: "fish_soup",
-      mealType: "snack",
-      name: "Mild fish soup",
-      serving: "1 bowl (small)",
-      protein: 14,
-      sources: ["fish"],
+      id: "chicken_khichdi_addin",
+      mealType: "dinner",
+      name: "Moong dal khichdi + shredded chicken",
+      serving: "1.5 cups khichdi + 90g chicken",
+      protein: 28,
+      sources: ["chicken", "dal"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["indian", "gentle"],
     },
+
+    // Fish (>=4)
     {
       id: "fish_steamed_rice",
       mealType: "lunch",
@@ -354,6 +379,48 @@
       tags: ["gentle"],
     },
     {
+      id: "fish_stew_mild",
+      mealType: "dinner",
+      name: "Mild fish stew (no tomato)",
+      serving: "1 bowl",
+      protein: 22,
+      sources: ["fish"],
+      diet: "nonveg",
+      tags: ["gentle"],
+    },
+    {
+      id: "fish_rice_congee",
+      mealType: "dinner",
+      name: "Fish with rice congee",
+      serving: "1 bowl",
+      protein: 20,
+      sources: ["fish"],
+      diet: "nonveg",
+      tags: ["gentle"],
+    },
+    {
+      id: "fish_curry_no_tomato",
+      mealType: "dinner",
+      name: "Gentle fish curry (no tomato) + rice",
+      serving: "120g fish + 1 cup rice",
+      protein: 28,
+      sources: ["fish"],
+      diet: "nonveg",
+      tags: ["indian", "gentle"],
+    },
+
+    // A couple of light western dishes (still gentle)
+    {
+      id: "scrambled_eggs_toast",
+      mealType: "breakfast",
+      name: "Scrambled eggs (soft) + toast",
+      serving: "2 eggs + 1 slice toast",
+      protein: 14,
+      sources: ["eggs"],
+      diet: "nonveg",
+      tags: ["gentle"],
+    },
+    {
       id: "baked_fish_potato",
       mealType: "dinner",
       name: "Baked fish + mashed potato",
@@ -361,7 +428,7 @@
       protein: 26,
       sources: ["fish"],
       diet: "nonveg",
-      tags: ["western", "gentle"],
+      tags: ["gentle"],
     },
   ];
 
@@ -631,6 +698,15 @@
       .map((m) => applyAgeScaling(m, ageScale));
   }
 
+  function buildVegList(ulcerModeOn) {
+    // Used only for display text; keeps ulcer-friendly mode explicit about tomato exclusion.
+    const veg = ["lauki", "ridge gourd (tori/turai)", "pumpkin", "carrots", "zucchini", "french beans", "palak (well cooked)"];
+    const moderate = ["potatoes (moderate)", "beetroot (moderate)"];
+    const base = veg.concat(moderate);
+    if (ulcerModeOn) return base; // explicitly excludes tomato
+    return base.concat(["tomato (if tolerated)"]);
+  }
+
   function countOptionsBySource(pool) {
     const counts = {};
     for (const m of pool) {
@@ -676,9 +752,8 @@
       }
     }
 
-    const requestedNonVeg = new Set(["eggs", "chicken", "fish"]);
-    const selectedNonVeg = new Set(Array.from(preferredSources).filter((s) => requestedNonVeg.has(s)));
-    const requireOneSelectedNonVeg = dietMode === "nonveg" && selectedNonVeg.size > 0;
+    const mandatoryNonVegSources = new Set(["eggs", "chicken", "fish"]);
+    const enforceMandatoryNonVeg = dietMode === "nonveg";
 
     // Try multiple attempts to hit the target range.
     // Approach:
@@ -692,7 +767,7 @@
     for (let k = 0; k < attempts; k++) {
       const pickedIds = new Set();
       const menu = [];
-      const remainingRequired = new Set(selectedNonVeg);
+      const remainingRequired = new Set(enforceMandatoryNonVeg ? Array.from(mandatoryNonVegSources) : []);
 
       for (const slot of MENU_SLOTS) {
         const pick = chooseOne(
@@ -700,24 +775,23 @@
           pool,
           preferredSources,
           pickedIds,
-          requireOneSelectedNonVeg ? remainingRequired : null,
+          enforceMandatoryNonVeg ? remainingRequired : null,
         );
         if (!pick) break;
         pickedIds.add(pick.id);
         menu.push(pick);
 
-        if (requireOneSelectedNonVeg) {
+        if (enforceMandatoryNonVeg) {
           for (const s of pick.sources || []) remainingRequired.delete(s);
         }
       }
       if (menu.length !== MENU_SLOTS.length) continue;
 
-      // Hard requirement: if user explicitly selected eggs/chicken/fish in Non-veg mode,
-      // ensure at least one of those sources shows up somewhere in the day plan.
-      if (requireOneSelectedNonVeg) {
+      // Hard requirement: in Non-veg mode we must include eggs + chicken + fish somewhere in the day.
+      if (enforceMandatoryNonVeg) {
         const used = new Set(sourcesUsed(menu));
-        const hasOne = Array.from(selectedNonVeg).some((s) => used.has(s));
-        if (!hasOne) continue;
+        const missing = Array.from(mandatoryNonVegSources).filter((s) => !used.has(s));
+        if (missing.length) continue;
       }
 
       // Adjust by swapping snacks up/down.
@@ -814,6 +888,11 @@
     const debug = `diet=${dietMode} selected=[${Array.from(preferredSources).sort().join(",")}] used=[${usedSources.sort().join(",")}]`;
     if (!variety.ok && variety.missing.length) {
       warnings.push(`Limited variety for: ${variety.missing.join(", ")}.`);
+    }
+
+    // Friendly ulcer-friendly reminder + vegetable pool expansion for caregivers.
+    if (ulcerModeOn) {
+      warnings.push(`Ulcer-friendly veg ideas (no tomato): ${buildVegList(true).join(", ")}.`);
     }
 
     return { ok: true, menu: best.menu, total: best.total, warnings, debug };
