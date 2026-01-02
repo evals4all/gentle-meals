@@ -872,6 +872,7 @@
     const form = $("generatorForm");
     const proteinInput = $("proteinTarget");
     const notesInput = $("dietaryNotes");
+    const btn = $("generateBtn");
 
     function syncDietUI() {
       const mode = getSelectedDietMode(form);
@@ -882,6 +883,15 @@
       if (e.target && e.target.name === "dietMode") syncDietUI();
     });
     syncDietUI();
+
+    // Ensure the CTA always generates, even if the browser doesn't submit the form for any reason.
+    if (btn) {
+      btn.addEventListener("click", (e) => {
+        // If it's a submit button, the form handler will run too; prevent double-run.
+        e.preventDefault();
+        form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event("submit", { cancelable: true }));
+      });
+    }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
